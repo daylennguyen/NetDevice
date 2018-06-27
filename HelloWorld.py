@@ -5,7 +5,7 @@ import socket
 
 # https://docs.python.org/3/library/ipaddress.html
 import ipaddress
-
+import subprocess, re
 
 test = "Welcome User!"
 print(test)
@@ -26,7 +26,20 @@ print("\nYour IP Addresses (ipv6): ")
 for addr_data in addr_data_list:
     print(addr_data[4][0])
 
-print("Still need retrieve the subnet information\n")
+def get_mask():
+    ipstr = '([0-9]{1,3}\.){3}[0-9]{1,3}'
+    maskstr = '0x([0-9a-f]{8})'
+    ipconfig = subprocess.Popen("ipconfig", stdout=subprocess.PIPE)
+    output = ipconfig.stdout.read()
+    mask_pattern = re.compile(r"Subnet Mask (\. )*: %s" % ipstr)
+    pattern = re.compile(ipstr)
+    masklist = []
+    for maskaddr in mask_pattern.finditer(str(output)):
+        mask = pattern.search(maskaddr.group())
+        masklist.append(mask.group())
+    return masklist
+mask = get_mask()[0]
+print("The mask is ",mask)
 
 uFQDN = input("Enter a fully qualified domain name (FQDN): ")
 
