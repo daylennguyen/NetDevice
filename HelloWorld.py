@@ -38,10 +38,26 @@ def get_mask():
         mask = pattern.search(maskaddr.group())
         masklist.append(mask.group())
     return masklist
-mask = get_mask()[0]
-print("The mask is ",mask)
+#mask = get_mask()[0]
+#print("The mask is ",mask)
 
-uFQDN = input("Enter a fully qualified domain name (FQDN): ")
+uFQDN = input("Enter a fully qualified domain name (FQDN) or IP addres: ")
+def IP_fqdn_converter(instr):
+    ip4str=re.compile('([0-9]{1,3}\.){3}[0-9]{1,3}')
+    ip6str=re.compile('(.*:){7}(.*)')
+    fqdnstr=re.compile('(.*\.){2}(.*)')
+    matchip4 = re.match(ip4str,instr,re.I|re.M)
+    matchip6 = re.match(ip6str.instr,re.I|re.M)
+    matchfqdn = re.match(fqdnstr.instr,re.I|re.M)
+    if matchip4:
+        print("you enter is ipv4: ",instr);
+    elif matchip6:
+        print("you enter is ipv6: ",instr);
+    elif matchfqdn:
+        print("you enter is fqdn: ",instr);
+    else:
+        print("Please enter valid ip or fqdn");
+IP_fqdn_converter(uFQDN)
 
-print("The FQDN you entered was ", uFQDN)
-print("the IP address of ", uFQDN,": ", socket.gethostbyname(uFQDN))
+# print("The FQDN you entered was ", uFQDN)
+# print("the IP address of ", uFQDN,": ", socket.gethostbyname(uFQDN))
