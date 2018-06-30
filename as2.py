@@ -7,18 +7,15 @@ import subprocess, re
 import os
 
 def isIPv4(str):
-	# source: https://stackoverflow.com/a/44891729
-	pattern = "^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}$"
+	pattern = r'([0-9]{1,3}\.){3}[0-9]{1,3}'
 	return re.match(pattern, str)
 
 def isIPv6(str):
-	# source: https://stackoverflow.com/a/17871737
-	pattern = "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))"
+	pattern = r'(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}'
 	return re.match(pattern, str)
 
 def isFQDN(str):
-	# source: https://stackoverflow.com/a/20204811
-	pattern = "(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}\.?$)"
+	pattern = r'([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}'
 	return re.match(pattern, str)
 
 # todo: make to work with Linux
