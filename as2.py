@@ -6,9 +6,25 @@ import ipaddress
 import subprocess, re
 import os
 
+def isIPv4(str):
+	# source: https://stackoverflow.com/a/44891729
+	pattern = "^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}$"
+	return re.match(pattern, str)
+
+def isIPv6(str):
+	# source: https://stackoverflow.com/a/17871737
+	pattern = "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))"
+	return re.match(pattern, str)
+
+def isFQDN(str):
+	# source: https://stackoverflow.com/a/20204811
+	pattern = "(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}\.?$)"
+	return re.match(pattern, str)
+
+# todo: make to work with Linux
 def get_mask():
 	ipstr = '([0-9]{1,3}\.){3}[0-9]{1,3}'
-	maskstr = '0x([0-9a-f]{8})'
+	#maskstr = '0x([0-9a-f]{8})'
 	ipconfig = subprocess.Popen("ipconfig", stdout=subprocess.PIPE)
 	output = ipconfig.stdout.read()
 	mask_pattern = re.compile(r"Subnet Mask (\. )*: %s" % ipstr)
@@ -19,29 +35,72 @@ def get_mask():
 		masklist.append(mask.group())
 	return masklist
 	
-def is_ip4(address):
-        ip4str='([0-9]{1,3}\.){3}[0-9]{1,3}'
-        ip4_pattern=re.compile(ip4str)
-        ip4_match=re.match(r'([0-9]{1,3}\.){3}[0-9]{1,3}',address,re.I)
-        if ip4_match:
-                return True
-        else:
-                return False
-
-def is_ip6(address):
-        ip6_match = re.match(r'(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}', address, re.I)
-        if ip6_match:
-                return True
-        else:
-                return False
-
-def is_fqdn(fqdn):
-        fqdn_match=re.match(r'([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}', fqdn, re.I)
-        if fqdn_match:
-                return True
-        else:
-                return False
-
+def showInfo():
+	host_name = socket.gethostname()
+	print("Your Hostname is: ", host_name)
+	host_ipv4 = socket.gethostbyname(host_name)
+	print("Your IP Address (ipv4): ", host_ipv4)
+	addr_data_list = socket.getaddrinfo(host_name, 80, socket.AF_INET6)
+	print("Your IP Addresses (ipv6): ", end="")
+	for addr_data in addr_data_list:
+		print(addr_data[4][0], end="")
+	print("")
+	mask = get_mask()[0]
+	print("The mask is ", mask)
+	
+def fqdnToIp():
+	uFQDN = input("Enter a fully qualified domain name (FQDN): ")
+	if not isFQDN(uFQDN):
+		print("Not a FQDN!")
+		return
+	print("The FQDN you entered was ", uFQDN)
+	print("the IP address of ", uFQDN,": ", socket.gethostbyname(uFQDN))
+	
+def ipToFqdn():
+	ipAddr = input("Enter an IP address: ")
+	if isIPv4(ipAddr):
+		print("You entered an Ipv4 address.")
+	elif isIPv6(ipAddr):
+		print("You entered an Ipv6 address.")
+	else:
+		print("Not an IP address!")
+		return
+	FQDN = socket.getfqdn(ipAddr)
+	print("The FQDN is: " + FQDN)
+	
+def doPing():
+	name = input("Enter a hostname or IP address: ")
+	if isIPv4(name):
+		print("You entered an Ipv4 address.")
+	elif isIPv6(name):
+		print("You entered an Ipv6 address.")
+	elif isFQDN(name):
+		print("You entered a FQDN.")
+	else:
+		print("Invalid ping target!")
+		return
+	
+	# should work for all systems
+	print(os.system("ping " + name))
+	
+def doTraceRoute():
+	name = input("Enter a hostname or IP address: ")
+	if isIPv4(name):
+		print("You entered an Ipv4 address.")
+	elif isIPv6(name):
+		print("You entered an Ipv6 address.")
+	elif isFQDN(name):
+		print("You entered a FQDN.")
+	else:
+		print("Invalid traceroute target!")
+		return
+	
+	if os.name == 'nt': # windows system
+		print(os.system("tracert " + name))
+	else:
+		print(os.system("traceroute " + name))
+	
+	
 def __main__():
 	# needed?
 	#host_name = socket.gethostname()
@@ -54,59 +113,22 @@ def __main__():
 		print("\t" + "3. Get a FQDN from an IP")
 		print("\t" + "4. Ping a server")
 		print("\t" + "5. trace route to target")
-		print("\t" + "6. test IPv4/IPv6 with IP address")
-		print("\t" + "7. test IPv4/IPv6 with FQDN")
-		ans = input("Please enter a command number: ")
+		num = input("Please enter a command number: ")
 		
-		if ans == "0":
+		if num == "0":
 			print("Goodbye.")
 			quit()
-			
-		elif ans == "1": 
-			host_name = socket.gethostname()
-			print("Your Hostname is: ", host_name)
-			host_ipv4 = socket.gethostbyname(host_name)
-			print("Your IP Address (ipv4): ", host_ipv4)
-			addr_data_list = socket.getaddrinfo(host_name, 80, socket.AF_INET6)
-			print("Your IP Addresses (ipv6): ", end="")
-			for addr_data in addr_data_list:
-				print(addr_data[4][0], end="")
-			print("")
-			mask = get_mask()[0]
-			print("The mask is ", mask)
-			
-		elif ans == "2":
-			uFQDN = input("Enter a fully qualified domain name (FQDN): ")
-			print("The FQDN you entered was ", uFQDN)
-			print("the IP address of ", uFQDN,": ", socket.gethostbyname(uFQDN))
-			
-		elif ans == "3":
-			ipAddr = input("Enter an IP address: ")
-			FQDN = socket.getfqdn(ipAddr)
-			print("The FQDN is: " + FQDN)
-			
-		elif ans == "4":
-			ipAddr = input("Enter a hostname or IP address: ")
-			print(os.system("ping " + ipAddr))
-			
-		elif ans == "5":
-			print("TODO")
-			
-		elif ans == "6":
-			ipAddress=input("Enter ip address:")
-			if is_ip4(ipAddress):
-                                print("ip address you enter is ip4")
-                        elif is_ip6(ipAddress):
-                                print("ip address you enter is ip6")
-                        else:
-                                print("invalid ip address.")
-                        
-		elif ans == "7":
-			fqdn = input("Enter fqdn:")
-			print(is_fqdn(fqdn))
-			
+		elif num == "1": 
+			showInfo()
+		elif num == "2":
+			fqdnToIp()
+		elif num == "3":
+			ipToFqdn()
+		elif num == "4":
+			doPing()
+		elif num == "5":
+			doTraceRoute()
 		else:
 			print("Invalid option.")
-		
 		
 __main__()
