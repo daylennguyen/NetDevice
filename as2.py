@@ -19,7 +19,29 @@ def get_mask():
 		masklist.append(mask.group())
 	return masklist
 	
-	
+def is_ip4(address):
+        ip4str='([0-9]{1,3}\.){3}[0-9]{1,3}'
+        ip4_pattern=re.compile(ip4str)
+        ip4_match=re.match(r'([0-9]{1,3}\.){3}[0-9]{1,3}',address,re.I)
+        if ip4_match:
+                return True
+        else:
+                return False
+
+def is_ip6(address):
+        ip6_match = re.match(r'(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}', address, re.I)
+        if ip6_match:
+                return True
+        else:
+                return False
+
+def is_fqdn(fqdn):
+        fqdn_match=re.match(r'([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}', fqdn, re.I)
+        if fqdn_match:
+                return True
+        else:
+                return False
+
 def __main__():
 	# needed?
 	#host_name = socket.gethostname()
@@ -71,10 +93,17 @@ def __main__():
 			print("TODO")
 			
 		elif ans == "6":
-			print("TODO")
-			
+			ipAddress=input("Enter ip address:")
+			if is_ip4(ipAddress):
+                                print("ip address you enter is ip4")
+                        elif is_ip6(ipAddress):
+                                print("ip address you enter is ip6")
+                        else:
+                                print("invalid ip address.")
+                        
 		elif ans == "7":
-			print("TODO")
+			fqdn = input("Enter fqdn:")
+			print(is_fqdn(fqdn))
 			
 		else:
 			print("Invalid option.")
