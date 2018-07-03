@@ -155,7 +155,7 @@ def __main__():
         print("\n")
 
         if num == "0":
-            print("Goodbye.")
+            print("Goodbye. The results can now be copied to a text editor and printed.")
             quit()
         elif num == "1":
             showInfo()
